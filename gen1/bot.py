@@ -1,5 +1,7 @@
 import argparse
 import chess.variant
+import time
+import chess.svg
 
 
 def eval(board):
@@ -32,29 +34,38 @@ def eval(board):
     return total
 
 def alpha_beta(board, depth, alpha, beta, maximizing_player = chess.WHITE):
+    # print(alpha, beta)
     # print(board)
     if depth == 0 or board.is_variant_end():
-        return eval(board)
+        return [eval(board)]
     if board.turn == maximizing_player:
         value = float('-inf')
+        best_move = None
         for move in board.legal_moves:
             board.push(move)
-            value = max(value, alpha_beta(board, depth - 1, alpha, beta, False))
+            eval_value = alpha_beta(board, depth - 1, alpha, beta, False)
+            if eval_value[0] >= value:
+                value = eval_value[0]
+                best_move = move
             board.pop()
             if value >= beta:
                 break
             alpha = max(alpha, value)
-        return value
+        return value, best_move
     else:
         value = float('inf')
+        best_move = None
         for move in board.legal_moves:
             board.push(move)
-            value = min(value, alpha_beta(board, depth - 1, alpha, beta, True))
+            eval_value = alpha_beta(board, depth - 1, alpha, beta, True)
+            if eval_value[0] <= value:
+                value = eval_value[0]
+                best_move = move
             board.pop()
             if value <= alpha:
                 break
             beta = min(beta, value)
-        return value
+        return value, best_move
 
 
 def main():
@@ -63,7 +74,28 @@ def main():
     args = parser.parse_args()
     print('Depth:', args.depth)
     board = chess.variant.AntichessBoard()
-    print(alpha_beta(board, args.depth, float('-inf'), float('inf'), chess.WHITE))
+    # current_move = input('Enter move:')
+    current_move = ''
+    while current_move != 'exit':
+        if current_move == '':
+            start_time = time.time()
+            eval_value = alpha_beta(board, args.depth, float('-inf'), float('inf'), chess.WHITE)
+            print('Time:', time.time() - start_time)
+            print(eval_value)
+            print(board.san(eval_value[1]))
+            board.push(eval_value[1])
+            print('Current board:', eval(board))
+            print(board)
+        else:
+            board.push_san(current_move)
+            print(board)
+            print('-----------------')
+        if board.outcome():
+            print('Winner:', board.outcome())
+            break
+        # current_move = input('Enter move:')
+
+            
 
 if __name__ == '__main__':
     main()
