@@ -76,19 +76,22 @@ def main():
     board = chess.variant.AntichessBoard()
     # current_move = input('Enter move:')
     current_move = ''
+    current_player = chess.WHITE
     while current_move != 'exit':
         if current_move == '':
             start_time = time.time()
-            eval_value = alpha_beta(board, args.depth, float('-inf'), float('inf'), chess.WHITE)
+            eval_value = alpha_beta(board, args.depth, float('-inf'), float('inf'), current_player) # TODO: FIX
             print('Time:', time.time() - start_time)
             print(eval_value)
             print(board.san(eval_value[1]))
             board.push(eval_value[1])
             print('Current board:', eval(board))
             print(board)
+            current_player = not current_player
         else:
             board.push_san(current_move)
             print(board)
+            current_player = not current_player
             print('-----------------')
         if board.outcome():
             print('Winner:', board.outcome())
